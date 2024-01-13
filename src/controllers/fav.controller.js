@@ -51,6 +51,11 @@ const createFavorite = async (req, res) => {
     }
 };
 
+module.exports = {
+    getFavorites,
+    createFavorite,
+};
+
 const deleteFavorite = async (req, res) => {
     const { customer_id, product_id } = req.body;
 

@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const adminRoute = require("./routes/adminRoutes");
 const userRoute = require("./routes/userRoutes");
 const cartRoute = require("./routes/cartRoutes");
 const favRoute = require("./routes/favRoutes");
@@ -16,7 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
 
-app.use("/api/v1/products", adminRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/carts", cartRoute);
 app.use("/api/v1/favorites", favRoute);
