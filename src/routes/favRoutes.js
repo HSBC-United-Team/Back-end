@@ -1,7 +1,7 @@
 const express = require("express");
 const {
-  getFavorites,
-  createFavorite,
+    getFavorites,
+    createFavorite,
 } = require("../controllers/fav.controller");
 
 const router = express.Router();
