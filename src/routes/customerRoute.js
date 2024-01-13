@@ -18,3 +18,11 @@
 // router.delete("/:id", authentication, deletePost);
 
 // module.exports = router;
+
+// GET products
+
+// ADD product into cart
+
+// DELETE product in cart
+
+// UPDATE product in cart

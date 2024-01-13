@@ -24,3 +24,12 @@
 // A. Cart: Add, remove, decrease, increase products in cart
 // B. Fav: Add, remove, decrease, increase products in favorite
 // C. Order: Add, remove, decrease, increase products in cart
+
+const express = require("express");
+const { getProducts } = require("../controllers/adminRoute");
+
+const router = express.Router();
+
+router.get("/", getProducts);
+
+module.exports = router;

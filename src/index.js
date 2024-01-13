@@ -1,8 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-// const userRoute = require("./routes/user.route");
-// const postRoute = require("./routes/post.route");
+const adminRoute = require("./routes/adminRoutes");
 const ErrorHandler = require("./middlewares/errorHandler");
 const cookieParser = require("cookie-parser");
 
@@ -16,6 +15,7 @@ app.use(cors({ origin: true, credentials: true }));
 
 // app.use("/api", userRoute);
 // app.use("/api/posts", postRoute);
+app.use("/api/v1/products", adminRoute);
 
 app.use("*", (_, res, next) => {
     next(new ErrorHandler("Page not found!", 404));
