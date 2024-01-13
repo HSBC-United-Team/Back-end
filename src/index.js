@@ -17,18 +17,18 @@ app.use(cors({ origin: true, credentials: true }));
 // app.use("/api", userRoute);
 // app.use("/api/posts", postRoute);
 app.use("/api/v1/products", adminRoute);
-app.use("/api/v1/carts", cartController);
+app.use("/api/v1/favorites", favRoute);
 
 app.use("*", (_, res, next) => {
-    next(new ErrorHandler("Page not found!", 404));
+  next(new ErrorHandler("Page not found!", 404));
 });
 
 app.use((err, req, res, next) => {
-    const { statusCode = 500 } = err;
-    if (!err.message) err.message = "Tidakkk, ada sesuatu yang salah!";
-    res.status(statusCode).send(err.message);
+  const { statusCode = 500 } = err;
+  if (!err.message) err.message = "Tidakkk, ada sesuatu yang salah!";
+  res.status(statusCode).send(err.message);
 });
 
 app.listen(PORT, () => {
-    console.log(`APP IS RUNNING ON PORT ${PORT}`);
+  console.log(`APP IS RUNNING ON PORT ${PORT}`);
 });
