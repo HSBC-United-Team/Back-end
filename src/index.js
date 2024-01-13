@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const adminRoute = require("./routes/adminRoutes");
+const cartController = require("./routes/cartRoutes");
 const ErrorHandler = require("./middlewares/errorHandler");
 const cookieParser = require("cookie-parser");
 
