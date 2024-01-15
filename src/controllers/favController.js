@@ -4,20 +4,21 @@ const getFavorites = async (req, res) => {
     const { customer_id } = req.body;
 
     try {
-        const cartData = await Favorite.findAll({
+        // const currUser = req.user;
+
+        const favData = await Favorite.findAll({
             where: { customer_id },
-            include: [
-                { model: Product, attributes: ["id", "name", "img_url"] },
-            ],
+            include: [{ model: Product }],
             attributes: ["customer_id"],
         });
 
-        if (!cartData) {
+        if (!favData) {
             throw new ErrorHandler("Anda belum punya produk favorit", 404);
         }
 
-        res.json(cartData);
+        res.json(favData);
     } catch (err) {
+        console.error(err);
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }
@@ -49,11 +50,6 @@ const createFavorite = async (req, res) => {
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }
-};
-
-module.exports = {
-    getFavorites,
-    createFavorite,
 };
 
 const deleteFavorite = async (req, res) => {
