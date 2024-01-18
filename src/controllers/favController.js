@@ -1,4 +1,4 @@
-const { Favorite, Product, Favorite_item, User } = require("../db/models");
+const { Favorite, Product } = require("../db/models");
 const ErrorHandler = require("../middlewares/errorHandler");
 
 const getFavorites = async (req, res) => {
@@ -14,7 +14,6 @@ const getFavorites = async (req, res) => {
         const favData = await Favorite.findAll({
             where: { customer_id },
             include: [{ model: Product }],
-            attributes: ["customer_id"],
         });
 
         console.log(favData);
@@ -51,16 +50,18 @@ const addFavorite = async (req, res) => {
             throw new ErrorHandler("Produk tersebut tidak ada", 404);
         }
 
-        const favorite = await Favorite.create({ customer_id });
-        console.log(favorite);
-        await Favorite_item.create({
-            favorite_id: favorite.id,
-            product_id,
+        const favorite = await Favorite.findOne({
+            where: { customer_id, product_id },
         });
+
+        if (favorite) {
+            throw new ErrorHandler("Produk sudah ada di favorit", 401);
+        }
+
+        await Favorite.create({ customer_id, product_id });
 
         res.status(201).json({
             message: `Berhasil menambahkan ke favorite!`,
-            favorite,
         });
     } catch (err) {
         const { status = 500, message } = err;
@@ -83,7 +84,7 @@ const deleteFavorite = async (req, res) => {
         }
 
         const favorite = await Favorite.findOne({
-            where: { product_id: product_id },
+            where: { product_id },
         });
 
         if (!favorite) {
