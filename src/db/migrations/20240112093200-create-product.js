@@ -21,6 +21,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING,
             },
+            stock_level: {
+                allowNull: true,
+                type: Sequelize.DECIMAL(10, 2),
+            },
             description: {
                 allowNull: false,
                 type: Sequelize.TEXT,

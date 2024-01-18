@@ -17,6 +17,11 @@ module.exports = {
                     key: "id",
                 },
             },
+            cart_types: {
+                allowNull: false,
+                type: Sequelize.STRING,
+                defaultValue: "cart",
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
