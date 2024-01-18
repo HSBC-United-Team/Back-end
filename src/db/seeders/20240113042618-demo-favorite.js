@@ -9,6 +9,7 @@ module.exports = {
                 {
                     id: 1,
                     customer_id: 2,
+                    product_id: 2,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 },
