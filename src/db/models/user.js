@@ -5,7 +5,10 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             User.hasMany(models.Order);
             User.hasMany(models.Cart);
-            User.hasMany(models.Favorite);
+            User.belongsToMany(models.Product, {
+                through: "Favorite",
+                foreignKey: "user_id",
+            });
             User.hasMany(models.Payment);
         }
     }

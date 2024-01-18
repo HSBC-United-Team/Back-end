@@ -1,5 +1,5 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, DATE } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class Favorite extends Model {
         static associate(models) {
@@ -7,15 +7,15 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: "customer_id",
             });
 
-            Favorite.belongsToMany(models.Product, {
-                through: "Favorite_item",
-                foreignKey: "favorite_id",
+            Favorite.belongsTo(models.Product, {
+                foreignKey: "product_id",
             });
         }
     }
     Favorite.init(
         {
             customer_id: DataTypes.INTEGER,
+            product_id: DataTypes.INTEGER,
         },
         {
             sequelize,

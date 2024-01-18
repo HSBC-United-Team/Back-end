@@ -8,13 +8,14 @@ module.exports = (sequelize, DataTypes) => {
             });
             Product.belongsToMany(models.Category, {
                 through: "Category_item",
+                foreignKey: "product_id",
             });
             Product.belongsToMany(models.Cart, {
                 through: "Cart_item",
                 foreignKey: "product_id",
             });
-            Product.belongsToMany(models.Favorite, {
-                through: "Favorite_item",
+            Product.belongsToMany(models.User, {
+                through: "Favorite",
                 foreignKey: "product_id",
             });
         }
