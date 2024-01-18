@@ -62,7 +62,9 @@ const login = async (req, res) => {
             if (result) {
                 const token = jwt.sign(
                     {
-                        user: user,
+                        user_id: user.id,
+                        username: user.username,
+                        user_role: user.role,
                     },
                     process.env.SECRET_KEY,
                     { expiresIn: "1hr" }
@@ -71,10 +73,12 @@ const login = async (req, res) => {
                 res.cookie("token", token, { htttpOnly: true });
 
                 res.status(200).send({
-                    message: `Berhasil login sebagai ${user.first_name} ${user.last_name}`,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    role: user.role,
                 });
             } else {
-                throw new ErrorHandler("Password salah!", 400);
+                throw new ErrorHandler("Username atau Password salah!", 400);
             }
         }
     } catch (err) {
