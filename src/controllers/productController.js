@@ -13,9 +13,9 @@ const getAllProducts = async (_, res) => {
 };
 
 const getProduct = async (req, res) => {
-    const { id } = req.params;
+    const { product_id } = req.params;
     try {
-        const product = await Product.findOne({ where: { id } });
+        const product = await Product.findOne({ where: { id: product_id } });
         if (product === null) {
             throw new ErrorHandler("Produk tersebut tidak ada", 404);
         }
@@ -63,7 +63,7 @@ const addProduct = async (req, res) => {
 };
 
 const updateProduct = async (req, res) => {
-    const { id } = req.params;
+    const { product_id } = req.params;
     const { user_role } = req.user;
     const { name, description, stock_level, img_url, weight, price } = req.body;
     try {
@@ -71,7 +71,7 @@ const updateProduct = async (req, res) => {
             throw new ErrorHandler("Anda tidak dapat melakukan aksi ini!", 403);
         }
 
-        const product = Product.findOne({ where: { id } });
+        const product = Product.findOne({ where: { id: product_id } });
 
         if (!product) {
             throw new ErrorHandler("Produk tersebut tidak ada", 404);
@@ -115,14 +115,14 @@ const updateProduct = async (req, res) => {
 };
 
 const deleteProduct = async (req, res) => {
-    const { id } = req.params;
+    const { product_id } = req.params;
     const { user_role } = req.user;
     try {
         if (user_role !== "seller") {
             throw new ErrorHandler("Anda tidak dapat melakukan aksi ini!", 403);
         }
 
-        const product = Product.findByPk(id);
+        const product = Product.findByPk(product_id);
 
         if (!product) {
             throw new ErrorHandler("Produk tidak ditemukan", 404);

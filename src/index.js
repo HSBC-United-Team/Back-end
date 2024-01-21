@@ -5,6 +5,7 @@ const userRoute = require("./routes/userRoutes");
 const cartRoute = require("./routes/cartRoutes");
 const favRoute = require("./routes/favRoutes");
 const productRoute = require("./routes/productRoutes");
+const orderRoute = require("./routes/orderRoutes");
 const ErrorHandler = require("./middlewares/errorHandler");
 const cookieParser = require("cookie-parser");
 const auth = require("./middlewares/authentication");
@@ -21,6 +22,7 @@ app.use("/api/v1/users", userRoute);
 app.use("/api/v1/products", productRoute);
 app.use("/api/v1/carts", cartRoute);
 app.use("/api/v1/favorites", auth, favRoute);
+app.use("/api/v1/orders", auth, orderRoute);
 
 app.use("*", (_, res, next) => {
     next(new ErrorHandler("Page not found!", 404));

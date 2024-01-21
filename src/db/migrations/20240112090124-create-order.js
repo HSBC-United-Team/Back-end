@@ -26,6 +26,7 @@ module.exports = {
                 defaultValue: "pending",
                 type: Sequelize.ENUM(
                     "pending",
+                    "waiting for confirmation",
                     "processed",
                     "shipped",
                     "delivered",
