@@ -17,8 +17,9 @@ app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
 
 app.use("/api/v1/users", userRoute);
-app.use("/api/v1/carts", cartRoute);
 app.use("/api/v1/favorites", auth, favRoute);
+app.use("/api/v1/carts", auth, cartRoute);
+
 
 app.use("*", (_, res, next) => {
     next(new ErrorHandler("Page not found!", 404));
