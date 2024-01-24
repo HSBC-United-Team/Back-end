@@ -1,3 +1,4 @@
+const { Error } = require("sequelize");
 const { Favorite, Product } = require("../db/models");
 const ErrorHandler = require("../middlewares/errorHandler");
 
@@ -55,6 +56,7 @@ const addFavorite = async (req, res) => {
             message: `Berhasil menambahkan ${product.name} ke favorite!`,
         });
     } catch (err) {
+        console.error(err)
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }
