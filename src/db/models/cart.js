@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
             //     through: "Cart_item",
             //     foreignKey: "cart_id",
             // });
-            Cart.belongsTo(models.User, { foreignKey: "customer_id" });
+            Cart.belongsTo(models.User, {
+                foreignKey: "customer_id",
+                onDelete: "CASCADE",
+            });
             Cart.belongsToMany(models.Product, {
                 through: "Cart_item",
                 foreignKey: "cart_id",

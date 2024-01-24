@@ -35,7 +35,7 @@ const signUp = async (req, res) => {
             });
 
             await newUser.save();
-            res.send("BERHASIL MENDAFTARKAN AKUN!");
+            res.status(200).send({ Message: "BERHASIL MENDAFTARKAN AKUN!" });
         }
     } catch (err) {
         const { status = 500, message } = err;
@@ -71,8 +71,8 @@ const login = async (req, res) => {
                 );
 
                 res.cookie("token", token, { htttpOnly: true });
-
                 res.status(200).send({
+                    user_id: user.id,
                     first_name: user.first_name,
                     last_name: user.last_name,
                     role: user.role,

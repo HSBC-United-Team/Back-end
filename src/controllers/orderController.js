@@ -1,43 +1,68 @@
-const { Order, Cart_item, Order_detail, Product } = require("../db/models");
-const { Sequelize } = require("sequelize");
+const {
+    Order,
+    Cart_item,
+    Cart,
+    Order_detail,
+    Product,
+    sequelize,
+} = require("../db/models");
 const ErrorHandler = require("../middlewares/errorHandler");
 
 const createOrder = async (req, res) => {
     const { shipping_address, total_price, weight, cart_id } = req.body;
-    const user = req.user;
+    const { user_id } = req.user;
+
+    const t = await sequelize.transaction();
     try {
-        // Validasi dulu cart_id nya ada
-        const result = await Sequelize.transaction(async (t) => {
-            const order = await Order.create({
-                customer_id: user.user_id,
+        const cart = await Cart.findOne({
+            where: { id: cart_id, customer_id: user_id },
+        });
+
+        if (!cart) {
+            throw new ErrorHandler("Anda tidak dapat membuat order ini", 403);
+        }
+
+        const order = await Order.create(
+            {
+                customer_id: user_id,
                 shipping_address,
                 total_price,
                 weight,
-            });
+            },
+            { transaction: t }
+        );
 
-            const cart_detail = await Cart_item.findAll({ where: { cart_id } });
+        const cart_items = await Cart_item.findAll({ where: { cart_id } });
 
-            console.log(cart_detail);
+        for (const cart_item of cart_items) {
+            await Order_detail.create(
+                {
+                    order_id: order.id,
+                    product_id: cart_item.product_id,
+                    subtotal_price: cart_item.subtotal_price,
+                    quantity: cart_item.quantity,
+                },
+                { transaction: t }
+            );
+        }
 
-            return order;
-        });
+        await Cart_item.destroy(
+            { where: { id: cart_items.map((item) => item.id) } },
+            { transaction: t }
+        );
 
-        res.send({ result });
+        await cart.destroy({ transaction: t });
+        await t.commit();
 
-        // Buat order_id
-
-        // Ambil data dari cart_id trus salin ke order_detail dengan id hasil dari order.
-
-        // buat incoivenya
-
-        // hapus data di cart_id
+        res.status(200).send({ Message: "Berhasil membuat order" });
     } catch (err) {
+        await t.rollback();
+        console.log(err);
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }
 };
 
-// READ / Customer bisa ngelihat order
 const getAllOrders = async (req, res) => {
     const { user_role } = req.user;
 
@@ -60,16 +85,36 @@ const getAllOrders = async (req, res) => {
 };
 
 const getOwnOrder = async (req, res) => {
-    const {id} = req.user
-}
+    const { user_id } = req.user;
+
+    try {
+        const orders = await Order.findAll({
+            where: { customer_id: Number(user_id) },
+            include: {
+                model: Order_detail,
+                include: { model: Product },
+            },
+        });
+
+        if (orders.length === 0) {
+            throw new ErrorHandler("Anda belum punya order", 404);
+        }
+
+        res.status(200).send({ orders });
+    } catch (err) {
+        console.error(err);
+        const { status = 500, message } = err;
+        res.status(status).send({ Error: message });
+    }
+};
 
 const getSingleOrder = async (req, res) => {
-    const { id } = req.params;
+    const { order_id } = req.params;
     const { user_role, user_id } = req.user;
 
     try {
         const order = await Order.findOne({
-            where: { id },
+            where: { id: order_id },
             include: {
                 model: Order_detail,
                 include: {
@@ -79,14 +124,15 @@ const getSingleOrder = async (req, res) => {
         });
 
         if (user_role !== "seller") {
-            if (order.customer_id !== user_id) {
+            if (order.customer_id === Number(user_id)) {
+                if (!order) {
+                    throw new ErrorHandler("Order tersebut tidak ada", 404);
+                }
+
+                res.status(200).send({ order });
+            } else {
                 throw new ErrorHandler("Anda tidak dapat mengakses ini", 403);
             }
-            throw new ErrorHandler("Anda tidak dapat mengakses ini", 403);
-        }
-
-        if (!order) {
-            throw new ErrorHandler("Order tersebut tidak ada", 404);
         }
 
         res.status(200).send({ order });
@@ -115,9 +161,8 @@ const updateOrderStatus = async (req, res) => {
         }
 
         // Tambah validation updatedStatus
-
-        await Order.update(
-            { status_order: updatedStatus },
+        await order.update(
+            { order_status: updatedStatus },
             {
                 where: {
                     id,
@@ -133,11 +178,11 @@ const updateOrderStatus = async (req, res) => {
         res.status(status).send({ Error: message });
     }
 };
-//
 
 module.exports = {
     createOrder,
     updateOrderStatus,
     getAllOrders,
     getSingleOrder,
+    getOwnOrder,
 };
