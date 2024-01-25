@@ -70,7 +70,7 @@ const login = async (req, res) => {
                     { expiresIn: "1hr" }
                 );
 
-                res.cookie("token", token, { htttpOnly: true });
+                res.cookie("token", token, { httpOnly: true });
                 res.status(200).send({
                     user_id: user.id,
                     first_name: user.first_name,
