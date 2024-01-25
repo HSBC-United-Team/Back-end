@@ -17,16 +17,16 @@ const getFavorites = async (req, res) => {
             attributes: ["id"],
         });
 
-        if (favorites < 1) {
-            res.status(200).json({
+        if (favorites.length < 1) {
+            return res.status(200).json({
                 message: "Anda belum punya produk favorit.",
             });
         }
 
-        res.status(200).json(favorites);
+        return res.status(200).json({ favorites });
     } catch (err) {
         const { status = 500, message } = err;
-        res.status(status).send({ Error: message });
+        return res.status(status).json({ Error: message });
     }
 };
 
@@ -56,7 +56,7 @@ const addFavorite = async (req, res) => {
             message: `Berhasil menambahkan ${product.name} ke favorite!`,
         });
     } catch (err) {
-        console.error(err)
+        console.error(err);
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }

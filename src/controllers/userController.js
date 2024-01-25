@@ -72,6 +72,7 @@ const login = async (req, res) => {
 
                 res.cookie("token", token, {
                     httpOnly: true,
+                    sameSite: "Lax", // or 'None' if using HTTPS,
                     path: "/",
                     domain: "localhost",
                 });
