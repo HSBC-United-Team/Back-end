@@ -9,6 +9,7 @@ const productRoute = require("./routes/productRoutes");
 const ErrorHandler = require("./middlewares/errorHandler");
 const cookieParser = require("cookie-parser");
 const auth = require("./middlewares/authentication");
+const corsOptionsDelegate = require("./middlewares/cors.middleware.js");
 
 const PORT = process.env.PORT;
 const app = express();
@@ -16,7 +17,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors(corsOptionsDelegate));
 
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/favorites", auth, favRoute);
