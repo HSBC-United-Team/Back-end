@@ -17,19 +17,20 @@ const createOrder = async (req, res) => {
     const { shipping_address, total_price, weight, cart_id } = req.body;
     const { user_id } = req.user;
 
-    const validationResult = newOrderValidation(
-        shipping_address,
-        total_price,
-        weight,
-        cart_id
-    );
-
-    if (validationResult) {
-        const t = await sequelize.transaction();
-        try {
+    const t = await sequelize.transaction();
+    try {
+        const validationResult = newOrderValidation(
+            shipping_address,
+            total_price,
+            weight,
+            cart_id
+        );
+        if (validationResult) {
             const cart = await Cart.findOne({
                 where: { id: cart_id, customer_id: user_id },
             });
+
+            console.log(cart);
 
             if (!cart) {
                 throw new ErrorHandler(
@@ -71,11 +72,12 @@ const createOrder = async (req, res) => {
             await t.commit();
 
             res.status(200).send({ Message: "Berhasil membuat order" });
-        } catch (err) {
-            await t.rollback();
-            const { status = 500, message } = err;
-            res.status(status).send({ Error: message });
         }
+    } catch (err) {
+        console.log(err);
+        await t.rollback();
+        const { status = 500, message } = err;
+        res.status(status).send({ Error: message });
     }
 };
 
@@ -118,7 +120,6 @@ const getOwnOrder = async (req, res) => {
 
         res.status(200).send({ orders });
     } catch (err) {
-        console.error(err);
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }
@@ -170,10 +171,10 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { updatedStatus } = req.body;
 
-    const validationResult = updateOrderStatusValidation(id, updatedStatus);
+    try {
+        const validationResult = updateOrderStatusValidation(id, updatedStatus);
 
-    if (validationResult) {
-        try {
+        if (validationResult) {
             if (user_role !== "seller") {
                 throw new ErrorHandler(
                     "Anda tidak dapat melakukan aksi ini",
@@ -199,10 +200,10 @@ const updateOrderStatus = async (req, res) => {
             res.status(200).send({
                 message: `Berhasil memperbaharui status order menjadi ${updatedStatus}`,
             });
-        } catch (err) {
-            const { status = 500, message } = err;
-            res.status(status).send({ Error: message });
         }
+    } catch (err) {
+        const { status = 500, message } = err;
+        res.status(status).send({ Error: message });
     }
 };
 

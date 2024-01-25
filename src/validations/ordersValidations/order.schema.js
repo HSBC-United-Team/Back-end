@@ -30,14 +30,24 @@ const singleOrderSchema = Joi.object({
     }),
 });
 
+const orderStatusEnum = [
+    "pending",
+    "waiting for confirmation",
+    "processed",
+    "shipped",
+    "delivered",
+];
+
 const updateOrderStatusSchema = Joi.object({
-    updatedStatus: Joi.string().valid(
-        "pending",
-        "waiting for confirmation",
-        "processed ",
-        "shipped",
-        "delivered"
-    ),
+    updatedStatus: Joi.string()
+        .valid(...orderStatusEnum)
+        .required()
+        .messages({
+            "any.required": "Status terbaru dari order harus ada.",
+            "any.only": `Status order terbaru harus salah satu dari ${orderStatusEnum.map(
+                (orderStatus) => orderStatus
+            )}`,
+        }),
 });
 
 module.exports = {
