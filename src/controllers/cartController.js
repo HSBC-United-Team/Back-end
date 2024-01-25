@@ -9,12 +9,16 @@ const getCarts = async (req, res) => {
             where: { customer_id: user_id },
             include: { model: Product, through: { attributes: [] } },
         });
+
+        if (!carts) {
+            throw new ErrorHandler("Anda belum punya product di cart!", 404);
+        }
+
         res.status(200).json({
             message: "Berhasil mendapatkan Cart!",
             carts,
         });
     } catch (err) {
-        console.error(err);
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }
@@ -24,11 +28,13 @@ const addToCart = async (req, res) => {
     const { product_id, quantity, subtotal_price } = req.body;
 
     try {
+        // Perlu ditambahin validasi disini
+
         const { user_id } = req.user;
 
         const cart = await Cart.findOne({
             where: { customer_id: user_id },
-            include: { model: Product, through: { attributes: [] } },
+            include: { model: Product },
         });
 
         if (!cart) {
@@ -73,6 +79,8 @@ const addToCart = async (req, res) => {
 const updateCart = async (req, res) => {
     const { cart_id, product_id, quantity, subtotal_price } = req.body;
 
+    // Nah disini juga tambahin validasi apakah keempat data tersebut ada atau engga. Trus apakah benar sesuai format nya (number, string dll)
+
     try {
         const cart = await Cart.findOne({
             where: { id: cart_id },
@@ -112,9 +120,10 @@ const deleteCart = async (req, res) => {
     const { cart_id, product_id } = req.body;
 
     try {
+        // Disini juga tambahin validasi untuk product_id dan cart_id untuk ngecek dia angka apa engga. Referensi bisa check di contoh validasi orders (folder ordersValidation)
         const cart = await Cart.findOne({
             where: { id: cart_id },
-            include: { model: Product, through: { attributes: [] } },
+            include: { model: Product },
         });
 
         if (!cart) {
