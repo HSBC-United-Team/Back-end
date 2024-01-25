@@ -6,12 +6,12 @@ const {
 } = require("./order.schema");
 
 const newOrderValidation = (shipping_address, total_price, weight, cart_id) => {
-    const { error } = newOrderSchema.validate(
+    const { error } = newOrderSchema.validate({
         shipping_address,
         total_price,
         weight,
-        cart_id
-    );
+        cart_id,
+    });
 
     if (error) {
         throw new ErrorHandler(error.message, 400);
@@ -21,7 +21,7 @@ const newOrderValidation = (shipping_address, total_price, weight, cart_id) => {
 };
 
 const singleOrderValidation = (order_id) => {
-    const { error } = singleOrderSchema.validate(order_id);
+    const { error } = singleOrderSchema.validate({ order_id });
 
     if (error) {
         throw new ErrorHandler(error.message, 400);
@@ -32,11 +32,13 @@ const singleOrderValidation = (order_id) => {
 
 const updateOrderStatusValidation = (order_id, updatedStatus) => {
     if (singleOrderValidation(order_id)) {
-        const { error } = updateOrderStatusSchema(updatedStatus);
+        const { error } = updateOrderStatusSchema.validate({ updatedStatus });
 
         if (error) {
             throw new ErrorHandler(error.message, 400);
         }
+
+        return true;
     }
 };
 
