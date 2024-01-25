@@ -101,7 +101,7 @@ const updateProduct = async (req, res) => {
                 { ...updatedProduct },
                 {
                     where: {
-                        id,
+                        id: product_id,
                     },
                 }
             );
@@ -128,7 +128,7 @@ const deleteProduct = async (req, res) => {
             throw new ErrorHandler("Produk tidak ditemukan", 404);
         }
 
-        await Product.destroy({ where: { id } });
+        await Product.destroy({ where: { id: product_id } });
 
         res.status(200).send({ message: "Berhasil menghapus produk" });
     } catch (err) {
