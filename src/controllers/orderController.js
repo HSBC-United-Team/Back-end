@@ -4,6 +4,8 @@ const {
     Cart,
     Order_detail,
     Product,
+    Invoice,
+    Payment,
     sequelize,
 } = require("../db/models");
 const ErrorHandler = require("../middlewares/errorHandler");
@@ -68,7 +70,60 @@ const createOrder = async (req, res) => {
                 { transaction: t }
             );
 
+            // Create invoice
+            const invoice = await Invoice.create(
+                { order_id: order.id },
+                { transaction: t }
+            );
+
             await cart.destroy({ transaction: t });
+
+            const isPaymentSuccessful = () => {
+                const randNum = Math.floor(Math.random() * 10);
+
+                if (randNum > 8) {
+                    return false;
+                } else {
+                    return true;
+                }
+            };
+
+            if (isPaymentSuccessful) {
+                await Payment.create(
+                    {
+                        invoice_id: invoice.id,
+                        customer_id: user_id,
+                        amount: order.total_price,
+                    },
+                    { transaction: t }
+                );
+
+                await Invoice.update(
+                    { isPaid: true },
+                    { where: { id: invoice.id }, transaction: t }
+                );
+
+                await Order.update(
+                    { order_status: "waiting for confirmation" },
+                    {
+                        where: {
+                            id: order.id,
+                        },
+                        transaction: t,
+                    }
+                );
+            } else {
+                await order.update(
+                    { order_status: "cancelled" },
+                    {
+                        where: {
+                            id,
+                        },
+                    },
+                    { transaction: t }
+                );
+            }
+
             await t.commit();
 
             res.status(200).send({ Message: "Berhasil membuat order" });
