@@ -1,18 +1,12 @@
-const { Error } = require("sequelize");
 const { Favorite, Product } = require("../db/models");
 const ErrorHandler = require("../middlewares/errorHandler");
 
 const getFavorites = async (req, res) => {
-    const { user_id } = req.params;
-
     try {
         const currUser = req.user;
-        if (currUser.user_id !== Number(user_id)) {
-            throw new ErrorHandler("Anda tidak dapat mengakses data ini!", 403);
-        }
 
         const favorites = await Favorite.findAll({
-            where: { customer_id: user_id },
+            where: { customer_id: currUser.user_id },
             include: [{ model: Product }],
             attributes: ["id"],
         });
@@ -30,8 +24,8 @@ const getFavorites = async (req, res) => {
     }
 };
 
-const addFavorite = async (req, res) => {
-    const { product_id } = req.body;
+const isFavorite = async (req, res) => {
+    const { product_id } = req.params;
 
     try {
         const currUser = req.user;
@@ -47,39 +41,21 @@ const addFavorite = async (req, res) => {
         });
 
         if (favorite) {
-            throw new ErrorHandler("Produk sudah ada di favorit", 401);
+            await favorite.destroy();
+
+            res.status(200).json({
+                message: `Berhasil menghapus ${product.name} dari favorite!`,
+            });
+        } else {
+            await Favorite.create({
+                customer_id: currUser.user_id,
+                product_id,
+            });
+
+            res.status(201).json({
+                message: `Berhasil menambahkan ${product.name} ke favorite!`,
+            });
         }
-
-        await Favorite.create({ customer_id: currUser.user_id, product_id });
-
-        res.status(201).json({
-            message: `Berhasil menambahkan ${product.name} ke favorite!`,
-        });
-    } catch (err) {
-        console.error(err);
-        const { status = 500, message } = err;
-        res.status(status).send({ Error: message });
-    }
-};
-
-const deleteFavorite = async (req, res) => {
-    const { favorite_id } = req.params;
-
-    try {
-        const favorite = await Favorite.findOne({
-            where: { id: favorite_id },
-        });
-
-        if (!favorite) {
-            throw new ErrorHandler(
-                "Produk tersebut tidak ada di daftar favorit",
-                404
-            );
-        }
-
-        await favorite.destroy();
-
-        res.status(200).json({ message: "Berhasil menghapus favorite!" });
     } catch (err) {
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
@@ -88,6 +64,5 @@ const deleteFavorite = async (req, res) => {
 
 module.exports = {
     getFavorites,
-    addFavorite,
-    deleteFavorite,
+    isFavorite,
 };
