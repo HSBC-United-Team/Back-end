@@ -1,13 +1,19 @@
 const { Error } = require("sequelize");
 const { Cart, Cart_item, Product } = require("../db/models");
 const ErrorHandler = require("../middlewares/errorHandler");
+const cartValidation = require("../validations/cartValidation/cart.validation");
 
 const getCarts = async (req, res) => {
     try {
         const { user_id } = req.user;
         const carts = await Cart.findOne({
             where: { customer_id: user_id },
-            include: { model: Product, through: { attributes: [] } },
+            attributes: ["id"],
+            include: {
+                model: Product,
+                attributes: ["name", "price", "img_url"],
+                through: { attributes: ["id", "quantity", "subtotal_price"] },
+            },
         });
 
         if (!carts) {
@@ -28,8 +34,6 @@ const addToCart = async (req, res) => {
     const { product_id, quantity, subtotal_price } = req.body;
 
     try {
-        // Perlu ditambahin validasi disini
-
         const { user_id } = req.user;
 
         const cart = await Cart.findOne({
@@ -38,14 +42,16 @@ const addToCart = async (req, res) => {
         });
 
         if (!cart) {
-            const cart = await Cart.create({ customer_id: user_id });
-            await Cart_item.create({
-                cart_id: cart.id,
-                product_id,
-                quantity,
-                subtotal_price,
-            });
-        } else {
+            cart = await Cart.create({ customer_id: user_id });
+        }
+
+        const cartValidationResult = cartValidation(
+            product_id,
+            quantity,
+            subtotal_price
+        );
+
+        if (cartValidationResult) {
             const existingCartItem = await Cart_item.findOne({
                 where: { cart_id: cart.id, product_id },
             });
@@ -64,13 +70,15 @@ const addToCart = async (req, res) => {
                     subtotal_price,
                 });
             }
+
+            res.status(201).json({
+                message: "Berhasil ditambahkan ke cart!",
+                cart,
+            });
+        } else {
+            res.status(400).json({ Error: "Data cart tidak valid" });
         }
-        res.status(201).json({
-            message: "Berhasil menambahkan ke cart!",
-            cart,
-        });
     } catch (err) {
-        console.error(err);
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }
@@ -78,58 +86,70 @@ const addToCart = async (req, res) => {
 
 const updateCart = async (req, res) => {
     const { cart_id, product_id, quantity, subtotal_price } = req.body;
-
-    // Nah disini juga tambahin validasi apakah keempat data tersebut ada atau engga. Trus apakah benar sesuai format nya (number, string dll)
-
     try {
-        const cart = await Cart.findOne({
-            where: { id: cart_id },
-            include: { model: Product, through: { attributes: [] } },
-        });
-
-        if (!cart) {
-            return res.status(404).json({
-                message: "Cart tersebut tidak ada!",
-            });
-        }
-
-        const existingCartItem = await Cart_item.findOne({
-            where: { cart_id: cart.id, product_id },
-        });
-
-        if (!existingCartItem) {
-            return res.status(404).json({
-                message: "Cart item tersebut tidak ada!",
-            });
-        }
-
-        await existingCartItem.update({ quantity, subtotal_price });
-
-        res.status(200).json({
-            message: "Berhasil mengubah Cart!",
-            cart,
-        });
-    } catch (err) {
-        console.error(err);
-        const { status = 500, message } = err;
-        res.status(status).send({ Error: message });
-    }
-};
-
-const deleteCart = async (req, res) => {
-    const { cart_id, product_id } = req.body;
-
-    try {
-        // Disini juga tambahin validasi untuk product_id dan cart_id untuk ngecek dia angka apa engga. Referensi bisa check di contoh validasi orders (folder ordersValidation)
         const cart = await Cart.findOne({
             where: { id: cart_id },
             include: { model: Product },
         });
 
         if (!cart) {
-            return res.status(404).json({
-                message: "Cart tersebut tidak ada!",
+            return res
+                .status(404)
+                .json({ message: "Cart tersebut tidak ada!" });
+        }
+
+        const validationResult = cartValidation(
+            product_id,
+            quantity,
+            subtotal_price
+        );
+
+        if (validationResult) {
+            const existingCartItem = await Cart_item.findOne({
+                where: { cart_id: cart.id, product_id },
             });
+
+            if (!existingCartItem) {
+                return res.status(404).json({
+                    message: "Cart item tersebut tidak ada!",
+                });
+            }
+
+            await existingCartItem.update({ quantity, subtotal_price });
+
+            res.status(200).json({
+                message: "Berhasil mengubah Cart!",
+                cart,
+            });
+        } else {
+            res.status(400).json({ Error: "Data cart salah" });
+        }
+    } catch (err) {
+        const { status = 500, message } = err;
+        res.status(status).send({ Error: message });
+    }
+};
+
+const deleteCart = async (req, res) => {
+    try {
+        const { cart_id, product_id } = req.body;
+
+        // Validate product_id and cart_id are numbers
+        if (isNaN(product_id) || isNaN(cart_id)) {
+            return res
+                .status(400)
+                .json({ Error: "product_id or cart_id salah" });
+        }
+
+        const cart = await Cart.findOne({
+            where: { id: cart_id },
+            include: { model: Product },
+        });
+
+        if (!cart) {
+            return res
+                .status(404)
+                .json({ message: "Cart tersebut tidak ada!" });
         }
 
         const existingCartItem = await Cart_item.findOne({
@@ -137,9 +157,9 @@ const deleteCart = async (req, res) => {
         });
 
         if (!existingCartItem) {
-            return res.status(404).json({
-                message: "Cart item tersebut tidak ada!",
-            });
+            return res
+                .status(404)
+                .json({ message: "Cart item tersebut tidak ada!" });
         }
 
         await existingCartItem.destroy();
@@ -148,7 +168,6 @@ const deleteCart = async (req, res) => {
             message: "Berhasil menghapus Cart item!",
         });
     } catch (err) {
-        console.error(err);
         const { status = 500, message } = err;
         res.status(status).send({ Error: message });
     }
