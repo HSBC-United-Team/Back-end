@@ -11,7 +11,7 @@ const getCarts = async (req, res) => {
             attributes: ["id"],
             include: {
                 model: Product,
-                attributes: ["name", "price", "img_url"],
+                attributes: ["id", "name", "price", "img_url"],
                 through: { attributes: ["id", "quantity", "subtotal_price"] },
             },
         });
@@ -58,9 +58,12 @@ const addToCart = async (req, res) => {
 
             if (existingCartItem) {
                 await existingCartItem.update({
-                    quantity: existingCartItem.quantity + quantity,
+                    quantity:
+                        parseFloat(existingCartItem.quantity) +
+                        parseFloat(quantity),
                     subtotal_price:
-                        existingCartItem.subtotal_price + subtotal_price,
+                        parseFloat(existingCartItem.subtotal_price) +
+                        parseFloat(subtotal_price),
                 });
             } else {
                 await Cart_item.create({
