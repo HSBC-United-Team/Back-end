@@ -69,7 +69,7 @@ const addToCart = async (req, res) => {
        res.status(400).json({ Error: "Data cart tidak valid" });
      }
    } catch (err) {
-     console.error(err);
+
      const { status = 500, message } = err;
      res.status(status).send({ Error: message });
    }
@@ -114,7 +114,7 @@ const addToCart = async (req, res) => {
        res.status(400).json({ Error: "Data cart salah" });
      }
    } catch (err) {
-     console.error(err);
+    
      const { status = 500, message } = err;
      res.status(status).send({ Error: message });
    }
@@ -153,7 +153,7 @@ const addToCart = async (req, res) => {
        message: "Berhasil menghapus Cart item!",
      });
    } catch (err) {
-     console.error(err);
+    
      const { status = 500, message } = err;
      res.status(status).send({ Error: message });
    }
