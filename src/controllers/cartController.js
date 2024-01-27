@@ -59,8 +59,8 @@ const addToCart = async (req, res) => {
             if (existingCartItem) {
                 await existingCartItem.update({
                     quantity:
-                        parseFloat(existingCartItem.quantity) +
-                        parseFloat(quantity),
+                        parseInt(existingCartItem.quantity) +
+                        parseInt(quantity),
                     subtotal_price:
                         parseFloat(existingCartItem.subtotal_price) +
                         parseFloat(subtotal_price),
